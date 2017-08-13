@@ -1,12 +1,13 @@
 const URL = 'wss://js-assignment.evolutiongaming.com/ws_api';
 
-class Fields {
+export class Fields {
   static TYPE = '$type';
   static USER_NAME = 'username';
   static PASSWORD = 'password';
+  static TABLES = 'tables';
 }
 
-class Types {
+export class Types {
   static SUBSCRIBE_TABLES = 'subscribe_tables';
   static TABLE_LIST = 'table_list';
   static UNSUBSCRIBE_TABLES = 'unsubscribe_tables';
@@ -19,7 +20,7 @@ class Types {
   static REMOVAL_FAILED = 'removal_failed';
   static UPDATE_FAILED = 'update_failed';
 
-  // Expected Types from server
+  // Expected Types from tables
   static TABLE_ADDED = 'table_added';
   static TABLE_REMOVED = 'table_removed';
   static TABE_UPDATED = 'table_updated';
@@ -42,15 +43,30 @@ class SocketService {
     };
   }
 
-  send (data) {
-    this.socket.send(JSON.stringify(data))
+  subscribeTables() {
+    this.send({
+      [Fields.TYPE]: Types.SUBSCRIBE_TABLES,
+    })
   }
 
-  onError (cb) {
+  send(data) {
+    if (this.socket.readyState === this.socket.OPEN) {
+      this.socket.send(JSON.stringify(data));
+    } else {
+      let interval = setInterval(() => {
+        if (this.socket.readyState === this.socket.OPEN) {
+          this.socket.send(JSON.stringify(data));
+          clearInterval(interval);
+        }
+      }, 1);
+    }
+  }
+
+  onError(cb) {
     this.socket.onerror = cb;
   }
 
-  onMessage (cb) {
+  onMessage(cb) {
     this.socket.onmessage = cb;
   }
 }

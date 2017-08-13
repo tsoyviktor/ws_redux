@@ -4,7 +4,7 @@ import thunk from 'redux-thunk';
 import createHistory from 'history/createBrowserHistory';
 import rootReducer from './../modules';
 import webSocketService from '../services/webSocketService';
-import { onResponse, onError } from '../modules/server';
+import { onResponse, onError } from '../modules/tables';
 
 export const history = createHistory();
 
@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'development') {
   const devToolsExtension = window.devToolsExtension;
 
   if (typeof devToolsExtension === 'function') {
-    enhancers.push(devToolsExtension())
+    enhancers.push(devToolsExtension());
   }
 }
 
@@ -35,7 +35,13 @@ const store = createStore(
 );
 
 webSocketService.onError(err => store.dispatch(onError(err)));
-webSocketService.onMessage(data => store.dispatch(onResponse(data)));
+webSocketService.onMessage(data => {
+  store.dispatch(onResponse(JSON.parse(data.data)));
+});
+
+if (process.env.NODE_ENV === 'development') {
+  global.store = store;
+}
 
 
 export default store
