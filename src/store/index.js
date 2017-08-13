@@ -3,6 +3,8 @@ import { routerMiddleware } from 'react-router-redux';
 import thunk from 'redux-thunk';
 import createHistory from 'history/createBrowserHistory';
 import rootReducer from './../modules';
+import webSocketService from '../services/webSocketService';
+import { onResponse, onError } from '../modules/server';
 
 export const history = createHistory();
 
@@ -31,5 +33,9 @@ const store = createStore(
   initialState,
   composedEnhancers
 );
+
+webSocketService.onError(err => store.dispatch(onError(err)));
+webSocketService.onMessage(data => store.dispatch(onResponse(data)));
+
 
 export default store
